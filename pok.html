@@ -1,0 +1,815 @@
+﻿<!DOCTYPE html>
+
+<!-- This is based on DillingerLee's great template here:
+
+https://github.com/Team-Code/KA_Offline -->
+
+<html>
+ 	<head>
+
+		<title>Pok fullscreen</title>
+	
+</head>
+
+	<body style="background: #101070;">
+
+		<p align="center" style="margin: 0;">
+			<!--This draws the Canvas on the webpage -->
+			<canvas id="mycanvas"></canvas>
+		</p>
+	</body>
+	<!-- Run all the JavaScript stuff -->
+	<!-- Include the processing.js library -->
+	<!-- See https://khanacademy.zendesk.com/hc/en-us/articles/202260404-What-parts-of-ProcessingJS-does-Khan-Academy-support- for differences -->
+
+	<script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+	<script>
+
+		var sketchProc = function(processingInstance) {
+			with (processingInstance) {
+
+				size(1240, 660);
+				frameRate(30);
+
+				// ProgramCodeGoesHere
+				var card = function(stage, prev, name, hp, ability, energy1, att1, dmg1, energy2, att2, dmg2, weak, rest, retreat, color){
+
+					this.stage = stage; this.prev = prev;
+					this.name = name; this.hp = hp;
+					this.ability = ability;
+
+					this.energy1 = energy1; this.att1 = att1; this.dmg1 = dmg1;
+					this.energy2 = energy2; this.att2 = att2; this.dmg2 = dmg2;
+					this.weak = weak; this.rest = rest; this.retreat = retreat;
+					this.color = color;
+
+				};
+
+				var cardInst = function(C, damage, energy,condR,condT){
+					this.stage = C.stage; this.prev = C.prev;
+ 					this.name = C.name; this.hp = C.hp;
+					this.ability = C.ability;
+					this.energy1 = C.energy1; this.att1 = C.att1; this.dmg1 = C.dmg1;
+					this.energy2 = C.energy2; this.att2 = C.att2; this.dmg2 = C.dmg2;
+					this.weak = C.weak; this.rest = C.rest; this.retreat = C.retreat;
+					this.color = C.color;
+
+					this.damage = damage; this.energy = energy;
+
+					this.condR = condR; this.condT = condT;
+				
+};
+				var drawBack = function(x,y){
+					stroke(12, 0, 107);
+					strokeWeight(5);
+					fill(79, 129, 255);
+					rect(x,y,150,200,5);
+					fill(81, 163, 84);
+					arc(x+75,y+100,75,75,radians(180),radians(360));
+					fill(255, 0, 72);
+					arc(x+75,y+100,75,75,0,radians(180));
+					fill(255, 213, 0);
+					textSize(32);
+					text("pokProj",x+20,y+40);
+					pushMatrix();
+					translate(x+75,y+100);
+					rotate(radians(180));
+					translate(-x-75,-y-100);
+					text("pokProj",x+20,y+40);
+					popMatrix();
+				
+};
+				
+var i;
+				
+var p;
+				var deck = [];
+				var prize = [];
+				var hand = [];
+				var active = "none";
+				var bench = [];
+				var stadium = "none"
+				var discard = [];
+				var oppDeck = [];
+				var oppPrize = [];
+				var oppHand = [];
+				var oppActive = "none";
+				var oppBench = [];
+				var oppDiscard = [];
+				
+card.prototype.vis = function(x,y){
+					if(this.color === "green"){
+fill(60, 199, 0);
+}
+					else if(this.color === "red"){fill(255, 0, 0);}
+					else if(this.color === "redblue"){
+						noStroke();
+
+						fill(255, 0, 0);
+						rect(x,y,75,200);
+						fill(59, 75, 255);
+						rect(x+75,y,75,200);
+ 						noFill();
+
+					}else if(this.color === "blue"){
+fill(59, 75, 255);
+}
+					else if(this.color === "bluepink"){
+						noStroke();
+						fill(59, 75, 255);
+						rect(x,y,75,200);
+						fill(255, 145, 242);
+						rect(x+75,y,75,200);
+						noFill();
+					}else if(this.color === "yellow"){fill(225, 255, 0);
+}
+					else if(this.color === "purple"){fill(170, 0, 255);}
+					else if(this.color === "orange"){
+fill(189, 104, 0);
+}
+					else if(this.color === "black"){fill(41, 41, 41);}
+					else if(this.color === "gray"){
+fill(102, 101, 101);
+}
+					else if(this.color === "pink"){
+fill(255, 145, 242);
+}
+					else if(this.color === "gold"){
+fill(171, 171, 0);
+}
+					else if(this.color === "white"){
+fill(245, 245, 245);
+}
+
+					stroke(255, 242, 0);
+
+					strokeWeight(5);
+
+					rect(x,y,150,200,5);
+
+					fill(0, 0, 0);
+
+					textSize(7);
+
+					text(this.stage,x+5,y+10);
+
+					if(this.stage !== "basic"){text("Evolves from "+this.prev, x+5,y+29);
+}
+
+					text("Weakness", x+9,y+184);
+
+					text("Resistance", x+54,y+184);
+
+					text("Retreat Cost", x+101,y+184);
+
+					textSize(14);
+
+					text(this.name,x+20,y+22);
+					text(this.hp, x+120, y+22);
+
+					textSize(12);
+
+					stroke(0,0,0);
+					strokeWeight(1);
+					if(this.ability !== "none"){
+
+						fill(224,224,224);
+						rect(x+5,y+80,37,15,2);
+						fill(158,27,27);
+						text("Ability: "+this.ability,x+7,y+92);
+					}
+
+					if(this.att1 !== "none"){
+
+						if(this.energy1 !== "none"){
+
+							i = 0;
+
+							stroke(0, 0, 0);
+
+							strokeWeight(1);
+
+							for(var h = 0; h<this.energy1.length; h++){
+
+								p=0;
+								if(h === 0){fill(60, 199, 0);
+}
+								else if(h === 1){fill(255, 0, 0);}
+								else if(h === 2){fill(59, 75, 255);}
+								else if(h === 3){fill(225, 255, 0);}
+								else if(h === 4){
+fill(170, 0, 255);}
+								else if(h === 5){fill(189, 104, 0);}
+								else if(h === 6){fill(41, 41, 41);}
+								else if(h === 7){fill(102, 101, 101);}
+								else if(h === 8){fill(255, 145, 242);}
+								else if(h === 9){fill(171, 171, 0);
+}
+								else if(h === 10){fill(245, 245, 245);}
+								for(i += 0; p<this.energy1[h]; i++){
+									ellipse(x+9+(8*i),y+123,5,5);
+									p++;
+								}
+
+							}
+
+						}else{
+							fill(20, 20, 20,20);
+
+							ellipse(x+9,y+128,5,5);
+						}
+
+						fill(0,0,0);
+
+						text(this.att1,x+30,y+128);
+						if(this.dmg1 !== "none"){text(this.dmg1,x+127,y+128);
+}
+
+					}
+
+					if(this.att2 !== "none"){
+
+						if(this.energy2 !== "none"){
+							i = 0;
+							stroke(0, 0, 0);
+							strokeWeight(1);
+
+							for(var h = 0; h<this.energy2.length; h++){
+								p=0;
+								if(h === 0){fill(60, 199, 0);
+}
+								else if(h === 1){fill(255, 0, 0);}
+								else if(h === 2){fill(59, 75, 255);
+}
+								else if(h === 3){fill(225, 255, 0);}
+								else if(h === 4){fill(170, 0, 255);
+}
+								else if(h === 5){fill(189, 104, 0);}
+								else if(h === 6){fill(41, 41, 41);
+}
+								else if(h === 7){fill(102, 101, 101);}
+								else if(h === 8){fill(255, 145, 242);}
+								else if(h === 9){fill(171, 171, 0);}
+								else if(h === 10){fill(245, 245, 245);}
+								for(i += 0; p<this.energy2[h]; i++){ellipse(x+9+(8*i),y+150,5,5);p++;}
+
+							}
+
+						}else{
+fill(20, 20, 20,20);
+ellipse(x+9,y+150,5,5);
+}
+
+						fill(0,0,0);
+
+						text(this.att2,x+30,y+155);
+
+						text(this.dmg2,x+123,y+155);
+
+					}
+if(this.weak !== "none"){
+
+						if(this.weak === "green"){fill(60, 199, 0);}
+						else if(this.weak === "red"){fill(255, 0, 0);}
+						else if(this.weak === "blue"){fill(59, 75, 255);}
+						else if(this.weak === "yellow"){fill(225, 255, 0);}
+						else if(this.weak === "purple"){fill(170, 0, 255);}
+						else if(this.weak === "orange"){fill(189, 104, 0);}
+						else if(this.weak === "black"){fill(41, 41, 41);}
+						else if(this.weak === "gray"){fill(102, 101, 101);}
+						else if(this.weak === "pink"){fill(255, 145, 242);}
+						else if(this.weak === "gold"){fill(171, 171, 0);}
+						else if(this.weak === "white"){fill(245, 245, 245);
+}
+						stroke(0, 0, 0);
+
+						strokeWeight(1);
+
+						ellipse(x+27,y+190,5,5);
+
+					}if(this.rest !== "none"){
+						  if(this.rest === "green"){fill(60, 199, 0);}
+						else if(this.rest === "red"){fill(255, 0, 0);
+}
+						else if(this.rest === "blue"){fill(59, 75, 255);}
+						else if(this.rest === "yellow"){fill(225, 255, 0);}
+						else if(this.rest === "purple"){fill(170, 0, 255);}
+						else if(this.rest === "orange"){fill(189, 104, 0);}
+						else if(this.rest === "black"){fill(41, 41, 41);}
+						else if(this.rest === "gray"){fill(102, 101, 101);}
+						else if(this.rest === "pink"){fill(255, 145, 242);}
+						else if(this.rest === "gold"){fill(171, 171, 0);}
+						else if(this.rest === "white"){fill(245, 245, 245);}
+						strokeWeight(1);
+						stroke(0, 0, 0);
+						ellipse(x+62,y+190,5,5);
+					}
+if(this.retreat !== "none"){
+						fill(245,245,245);
+						for(var i = 0; i<this.retreat; i++){ellipse(x+105+(10*i),y+190,5,5);}
+
+					}
+
+				};
+
+				cardInst.prototype.vis = function(x,y){
+					pushMatrix();
+					translate(x+75,y+100);
+					rotate(radians(90*this.condR));
+					translate(-x-75,-y-100);
+					  if(this.color === "green"){fill(60, 199, 0);}
+					else if(this.color === "red"){
+fill(255, 0, 0);}
+					else if(this.color === "redblue"){
+						noStroke();
+						fill(255, 0, 0);
+						rect(x,y,75,200);
+						fill(59, 75, 255);
+						rect(x+75,y,75,200);
+						noFill();
+					}else if(this.color === "blue"){fill(59, 75, 255);}
+					else if(this.color === "bluepink"){
+						noStroke();
+						fill(59, 75, 255);
+						rect(x,y,75,200);
+						fill(255, 145, 242);
+						rect(x+75,y,75,200);
+						noFill();
+					}
+					else if(this.color === "yellow"){fill(225, 255, 0);}
+					else if(this.color === "purple"){fill(170, 0, 255);}
+					else if(this.color === "orange"){fill(189, 104, 0);}
+					else if(this.color === "black"){fill(41, 41, 41);}
+					else if(this.color === "gray"){fill(102, 101, 101);}
+					else if(this.color === "pink"){fill(255, 145, 242);}
+					else if(this.color === "gold"){fill(171, 171, 0);}
+					else if(this.color === "white"){fill(245, 245, 245);
+}
+					stroke(255, 242, 0);
+					strokeWeight(5);
+					rect(x,y,150,200,5);
+					fill(0, 0, 0);
+					textSize(7);
+					text(this.stage,x+5,y+10);
+					if(this.stage !== "basic"){text("Evolves from "+this.prev, x+5,y+29);
+}
+					text("Weakness", x+9,y+184);
+					text("Resistance", x+54,y+184);
+					text("Retreat Cost", x+101,y+184);
+					textSize(14);
+					text(this.name,x+20,y+22);
+					text(this.hp, x+120, y+22);
+					i=0;
+					stroke(0, 0, 0);
+					strokeWeight(1);
+					textSize(8);
+					
+for(p=this.damage;p>0;p-=0){
+						
+if(p>=100){
+							
+i++;
+							
+fill(158, 0, 0);
+							
+ellipse(x-5+i*21,y+44,15,15);
+							
+fill(255, 255, 255);
+							
+text("100",x-13+i*21,y+41,15,15);
+							
+p-=100;
+						
+}else if(p>=50){
+							
+i++;
+							
+fill(255, 119, 0);
+							
+ellipse(x-5+i*21,y+44,15,15);
+							
+fill(255, 255, 255);
+							
+text("50",x-10+i*21,y+41,15,15);
+							
+p-=50;
+						
+}else if(p>=10){
+
+							i++;
+							
+fill(255, 191, 0);
+							
+ellipse(x-5+i*21,y+44,15,15);
+							
+fill(255, 255, 255);
+							
+text("10",x-11+i*21,y+41,15,15);
+							
+p-=10;
+						
+}
+
+					}
+					
+i=0;
+					
+for(p=this.condT;p>0;p-=0){
+						
+if(p>=2){
+							
+i++;
+							
+fill(255, 153, 0);
+							
+ellipse(x-13+i*30,y+65,20,20);
+							
+fill(255, 255, 255);
+							
+text("BRN",x-23+i*30,y+62,15,15);
+							
+p-=2;
+						
+}if(p===1){
+							
+i++;
+							
+fill(29, 214, 0);
+							
+ellipse(x-13+i*30,y+65,20,20);
+							
+fill(255, 255, 255);
+							
+text("PSN",x-23+i*30,y+62,15,15);
+							
+p-=50;
+
+						}
+					
+}
+
+					textSize(12);
+					if(this.ability !== "none"){
+
+						fill(224,224,224);
+						rect(x+5,y+80,37,15,2);
+						fill(158,27,27);
+						text("Ability: "+this.ability,x+7,y+92);
+					}
+					if(this.att1 !== "none"){
+						if(this.energy1 !== "none"){
+							i = 0;
+							for(var h = 0; h<this.energy1.length; h++){
+								p=0;
+								if(h === 0){fill(60, 199, 0);}
+								else if(h === 1){fill(255, 0, 0);}
+								else if(h === 2){fill(59, 75, 255);}
+								else if(h === 3){fill(225, 255, 0);}
+								else if(h === 4){fill(170, 0, 255);}
+								else if(h === 5){fill(189,104, 0);}
+								else if(h === 6){fill(41, 41, 41);}
+								else if(h === 7){fill(102, 101, 101);}
+								else if(h === 8){fill(255, 145, 242);}
+								else if(h === 9){fill(171, 171, 0);}
+								else if(h === 10){fill(245, 245, 245);}
+								for(i += 0; p<this.energy1[h]; i++){ellipse(x+9+(8*i),y+123,5,5);p++;}
+							}
+						}else{
+							noStroke();
+							fill(20, 20, 20,20);
+							ellipse(x+9,y+128,5,5);
+						}
+						fill(0,0,0);
+						text(this.att1,x+30,y+128);
+						if(this.dmg1 !== "none"){text(this.dmg1,x+127,y+128);}
+					}if(this.att2 !== "none"){
+						if(this.energy2 !== "none"){
+							i = 0;
+							stroke(0, 0, 0);
+							strokeWeight(1);
+							for(var h = 0; h<this.energy2.length; h++){
+								p=0;
+								if(h === 0){fill(60, 199, 0);}
+								else if(h === 1){fill(255, 0, 0);}
+								else if(h === 2){fill(59, 75, 255);}
+								else if(h === 3){fill(225, 255, 0);}
+								else if(h === 4){fill(170, 0, 255);}
+								else if(h === 5){fill(189, 104, 0);}
+								else if(h === 6){fill(41, 41, 41);
+}
+								else if(h === 7){fill(102, 101, 101);}
+								else if(h === 8){fill(255, 145, 242);}
+								else if(h === 9){fill(171, 171, 0);}
+								else if(h === 10){fill(245, 245, 245);}
+								for(i += 0; p<this.energy2[h]; i++){ellipse(x+9+(8*i),y+150,5,5);p++;}
+							}
+						}else{fill(20, 20, 20,20);ellipse(x+9,y+150,5,5);}
+						fill(0,0,0);
+						text(this.att2,x+30,y+155);
+						text(this.dmg2,x+123,y+155);
+
+					}
+
+					if(this.energy !== [0,0,0,0,0,0,0,0,0,0,0]){
+						i = 0;
+						stroke(0, 0, 0);
+						strokeWeight(1);
+						for(var h = 0; h<this.energy.length; h++){
+							p=0;
+							if(h === 0){fill(60, 199, 0);}
+							else if(h === 1){fill(255, 0, 0);}
+							else if(h === 2){fill(59, 75, 255);}
+							else if(h === 3){fill(225, 255, 0);}
+							else if(h === 4){fill(170, 0, 255);}
+							else if(h === 5){fill(189, 104, 0);}
+							else if(h === 6){fill(41, 41, 41);
+}
+							else if(h === 7){fill(102, 101, 101);}
+							else if(h === 8){fill(255, 145, 242);
+}
+							else if(h === 9){fill(171, 171, 0);}
+							else if(h === 10){fill(245, 245, 245);}
+							for(p+=0;p<this.energy[h];p++){ellipse(x+148,y-(8*(i+1)),5,5);i++;}
+						}
+					}if(this.weak !== "none"){
+						if(this.weak === "green"){fill(60, 199, 0);}
+						else if(this.weak === "red"){fill(255, 0, 0);}
+						else if(this.weak === "blue"){
+fill(59, 75, 255);}
+						else if(this.weak === "yellow"){fill(225, 255, 0);}
+						else if(this.weak === "purple"){fill(170, 0, 255);}
+						else if(this.weak === "orange"){fill(189, 104, 0);}
+						else if(this.weak === "black"){fill(41, 41, 41);}
+						else if(this.weak === "gray"){fill(102, 101, 101);}
+						else if(this.weak === "pink"){fill(255, 145, 242);}
+						else if(this.weak === "gold"){fill(171, 171, 0);}
+						else if(this.weak === "white"){fill(245, 245, 245);}
+						stroke(0, 0, 0);
+						strokeWeight(1);
+						ellipse(x+27,y+190,5,5);
+					}if(this.rest !== "none"){
+						if(this.rest === "green"){fill(60, 199, 0);}
+						else if(this.rest === "red"){fill(255, 0, 0);}
+						else if(this.rest === "blue"){fill(59, 75, 255);}
+						else if(this.rest === "yellow"){fill(225, 255, 0);}
+						else if(this.rest === "purple"){fill(170, 0, 255);}
+						else if(this.rest === "orange"){fill(189, 104, 0);}
+						else if(this.rest === "black"){fill(41, 41, 41);}
+						else if(this.rest === "gray"){fill(102, 101, 101);}
+						else if(this.rest === "pink"){fill(255, 145, 242);}
+						else if(this.rest === "gold"){fill(171, 171, 0);}
+						else if(this.rest === "white"){fill(245, 245, 245);}
+						strokeWeight(1);
+						stroke(0, 0, 0);
+						ellipse(x+62,y+190,5,5);
+					}
+if(this.retreat !== "none"){fill(245,245,245);for(var i = 0; i<this.retreat; i++){ellipse(x+105+(10*i),y+190,5,5);}
+}
+					popMatrix();
+				};
+
+				
+				//card data
+				
+{//SM Dragon's Majesty/Pdone
+				var smdm1 = new card("basic","none","Charmander",70, "none",[0,1,0,0,0,0,0,0,0,0,1],"Fire Fang",20, "none","none","none", "blue","none",2,"red");
+
+				var smdm2 = new card("stage 1","Charmander","Charmeleon",80,"Burning Fighter","none","none","none",[0,2,0,0,0,0,0,0,0,0,1],"Flamethrower",80,"blue","none",2,"red");
+
+				var smdm4 = new card("basic","none","Torchic", 60, "none", [0,0,0,0,0,0,0,0,0,0,1],"Singe","none", "none","none","none", "blue","none",1,"red");
+
+				var smdm6 = new card("stage 2","Combusken", "Blaziken", 150, "Firestarter", "none","none","none", [0,2,0,0,0,0,0,0,0,0,0,1],"Fire Stream",90, "blue","none",2, "red");
+
+				var smdm11= new card("basic","none","Reshiram GX",180,"Flame Charge",[0,3,0,0,0,0,0,0,0,0,1],"Scorching Column",110,[0,3,0,0,0,0,0,0,0,0,1],"Vermilion GX",180,"blue","none",2,"red");
+
+				var smdm13= new card("basic","none", "Salandit",60, "none", [0,0,0,0,0,0,0,0,0,0,1],"Call for Family","none", [0,1,0,0,0,0,0,0,0,0,1],"Dig Claws",20, "blue","none",1, "red");
+}
+
+
+				{//SM Ultra Prism-/nw
+				var smup51= new card("basic","none","Drifloon",60, "none", [0,0,0,0,1,0,0,0,0,0,0],"Creepy Wind","none", [0,0,0,0,0,0,0,0,0,0,1],"Hang Down",10, "purple");
+
+				var smup108=new card("basic","none","Glameow",60, "none", [0,0,0,0,0,0,0,0,0,0,1],"Gentle Bite",10, "none","none","none", "white");
+
+				var smup114=new card("basic","none","Oranguru",120, "none", [0,0,0,0,0,0,0,0,0,0,1],"Resource Management",0, [0,0,0,0,0,0,0,0,0,0,3],"Profound Knowledge",60, "white");
+}
+
+
+				{//SM Guardians Rising-/pold
+				var smgr2 = new card("stage 1","Bellsprout","Weepinbell",80, "none", [1,0,0,0,0,0,0,0,0,0,1],"Muddy Acid",40, "none","none","none", "green");
+
+				var smgr3 = new card("Victreebel",140, "none", ["green"],"Pollen Hazard",20, ["green","white","white"],"Stick and Absorb",80, "green");
+
+				var smgr11= new card("Litwick",50, "none", ["red"],10,"none","none","red",0);
+
+				var smgr16= new card("Salazzle",110, "Hot Poison",["red","white","white"],90,"none","none","red",0);
+
+				var smgr21= new card("Alolan Vulpix",60, "none","none",0, ["white","white"],20, "blue", 0);
+				
+var smgr32= new card("Glalie",120,"none",["blue","blue"],40,["blue","blue","blue"],70,"blue", 0);
+				
+var smgr40= new card("Alolan Geodude",70,"none","none",0,["yellow","white","white"],40,"yellow",0);
+
+				var smgr43= new card("Helioptile",60, "none", ["yellow"],"Thunder Shock",10, "none","none","none", "yellow");
+				
+var smgr48= new card("Slowpoke",70, "none", ["white"],"Headbutt",10, ["purple","white","white"],"Whimsy Tackle",60, "purple");
+
+				var smgr62= new card("Machop",70, "none", ["orange","orange"],"Dual Chop",30, "none","none","none", "orange");
+
+				var smgr64= new card("Machoke",100, "Daunting Pose", "none","none","none", ["orange","orange"],"Cross Chop",30, "orange");
+
+				var smgr67= new card("Gligar",70, "none", ["orange"],"Double Shot",0, "none","none","none","orange");
+
+				var smgr68= new card("Gliscor",110, "none", ["orange"],"Finishing Stinger",70,  ["orange","white","white"],"Guillotine",90, "orange");
+
+				var smgr72= new card("Pancham",60, "none", ["orange","orange"],"Karate Chop",60, "none","none","none", "orange",0,);
+
+				var smgr83= new card("Beldum",60, "none", ["gray"],"Core Beam",20,"none","none","none", "gray");
+
+				var smgr107=new card("Patrat",60, "none", ["white"],"Glance",0, ["white","white"],"Tackle",20, "white",0,);
+
+				var smgr108=new card("Watchog",90, "none", ["white"],"Scrutinize",0, ["white","white","white"],"Slam",60, "white");
+
+				var smgr113=new card("Bewear",130, "Rake It in", "none","none","none", ["white","white","white"],"Dangerous Blow",60, "white");}
+
+
+
+				{//XY Steam Seige/pdone
+				var xyss107=new card("basic","none","VolcanionEX",140, "Steam Up","none","none","none",[0,2,0,0,0,0,0,0,0,0,1],"Volcanic Heat",130, "blue","none",3,"redblue");}
+
+
+				{//XY Ancient Origins
+
+				var xyao1 = new card("Oddish",50,"none",["green"],"Trip Over",10, "none","none","none", "green");
+				
+var xyao3 = new card("Vileplume",130, "Irritating Pollen", "none","none","none", ["green","green","white"],"Solar Beam",70, "green");
+
+				var xyao5 = new card("Spinarak",50, "none", ["white"],"String Shot","none", "none","none", "green");
+				
+var xyao6 = new card("Ariados",70,"Poisonous Nest",["green","white"],"Impound",30,"none","none", "green");
+
+				var xyao9 = new card("Combee",40, "none", ["green"],"Bug Bite",10, "none","none","none", "green");
+				
+var xyao16= new card("Larvesta",70, "none", ["red","white"],"Combustion",30, "none","none","none", "red");
+
+				var xyao19= new card("Magicarp",30,"none", ["water"],"Epic Splash",30, "none","none","none", "blue");
+
+				var xyao21= new card("Gyarados",130,"none", ["white","white"],"Full Retaliation",30, ["blue","blue","white","white"],"Thrash",100, "blue");
+
+				var xyao22= new card("Vaporeon",90, "Aqua Effect", "none","none","none", ["blue","white","white"],"Hydro Splash",70, "blue");
+				
+var xyao23= new card("Relicanth",90, "none", ["white"],"Deep Sea Search","none", ["white","white"],"Take Down",30, "blue");
+
+				var xyao24= new card("Regice",120,"none", ["blue","white"],"Ice Beam",30, ["blue","white","white"],"Resistance Blizzard",70, "blue");
+
+				var xyao26= new card("Jolteon",90, "Electric Effect", "none","none","none", ["yellow","white","white"],"Thunder Blast",80, "yellow");
+
+				var xyao32= new card("Baltoy",60, "none", ["purple"],"Future Spin","none", "none","none", "purple");
+
+				var xyao34= new card("Golett",90,"none", ["white","white"],"Smash Punch",30, "none","none","purple");
+
+				var xyao38= new card("Wooper",60, "none", ["white"],"Nap","none", ["blue","white"],"Wave Splash",20, "orange");
+
+				var xyao39= new card("Quagsire",110,"none", ["blue","white"],"Wave Splash",30, ["blue","white","white"],"Landslide",80, "orange");
+
+				var xyao41= new card("Golurk",130,"none",["white"],"Dig Out",20,["orange","white","white","white"],"Double Lariat",90, "orange");
+
+				var xyao44= new card("Sableye",70,"none",["black"],"Bewitching Eyes","none", ["black","white"],"Furtive Drop",30,"black");
+
+				var xyao45= new card("Inkay",50,"none", ["black"],"Ink Spit",10, "none","none", "black");
+
+				var xyao47= new card("Beldum",60, "none", ["gray"],"Ram",10, ["gray","white","white"],"Spinning Attack",30,"gray");
+
+				var xyao48= new card("Metang",90,"none",["gray","white"],"Metal Claw",30,["gray","gray","white"],"Bullet Punch",50,"gray");
+
+				var xyao49= new card("Metagross",150, "Magnetic Warp", "none","none","none", ["gray","gray","white","white"],"Iron Cannon",80, "gray");
+
+				var xyao51= new card("Registeel",120,"none", ["gray","white"],"Iron Head",30, ["gray","white","white"],"Forbidden Iron Hammer",70, "gray");
+
+				var xyao52= new card("Ralts",60, "none", ["white"],"Mumble",10, ["pink","white"],"Magical Shot",20, "pink");
+
+				var xyao55= new card("Cottonee",40, "none", ["pink"],"Cotton Bed",10, "none","none","none", "pink");
+
+				var xyao58= new card("Goomy",40, "Water Down", "none","none","none", ["pink","white"],"Stampede",10, "gold");
+
+				var xyao59= new card("Sliggoo",70, "none", ["white"],"Bubble","none", ["blue","pink"],"Melt",20, "gold");
+
+				var xyao61= new card("Meowth",60, "none", ["white"],"Act Tough",10, "none","none","none", "white");
+
+				var xyao62= new card("Persian",90,"none", ["white"],"Fake Out",30, ["white","white"],"Ambush",40, "white");
+
+				var xyao63= new card("Eevee",60, "none", ["white"],"Tackle",10, ["white","white"],"Lunge",30, "white");
+
+				var xyao64= new card("Porygon",60, "none", ["white"],"Data Check","none", ["white","white"],"Sharpen",20,"white");
+
+				var xyao65= new card("Porygon2",80,"none", ["white"],"Sharpen",20, ["white","white","white"],"Tri Attack",30,"white");
+
+				var xyao68= new card("LugiaEX",170,"none", ["white","white"],"Aero Ball",20, ["white","white","white","white"],"Deep Hurricane",80,"white");}
+
+				{//XY Furious Fists/nw
+
+				
+var xyff38= new card("basic","none","Skorupi",70, "none", [0,0,0,0,0,0,0,0,0,0,1],"Poison Sting","none", [0,0,0,0,1,0,0,0,0,0,2],"Pierce",30, "purple");}
+
+				{//XY Flashfire-/nw
+
+
+				
+var xyfl10= new card("basic","none","Maractus",90, "none", [1,0,0,0,0,0,0,0,0,0,0],"Exciting Shake","none", [0,0,0,0,0,0,0,0,0,0,2],"Prickly Needles",20, "green");}
+
+				{//BW Plasma Freeze
+
+				var bwpf6 = new card("Treecko",60, "none", ["white"],"Pound",10, ["green","white"],"Reckless Charge",30, "green");
+				
+var bwpf18= new card("Horsea",60, "none", ["blue"],"Fin Smack",10, "none","none","none", "blue");
+				
+var bwpf35= new card("Chinchou",70,"none", ["yellow","white"],"Static Shock",20, "none","none","none", "yellow");
+
+				var bwpf40= new card("Nidoran♀",60, "none", ["purple","white"],"Poison Sting",20, "none","none","none", "purple");
+
+				var bwpf44= new card("Nidorino",90, "none", ["purple","white"],"Double Kick",30, ["white","white","white"],"Horn Attack",50, "purple");
+
+				var bwpf45= new card("Grimer",70, "none", ["purple"],"Lure Poison",0, ["purple","white","white"],"Sludge Toss",30, "purple");
+
+				var bwpf55= new card("Yamask",60, "none", ["white"],"Will-O-Wisp",10, ["purple","white","white"],"Ram",30, "purple");
+
+				var bwpf76= new card("Deino",60,  "none", ["white","white"],"Slam",20, "none","none","none", "black");}
+
+				{//BW Emerging Powers
+				
+var bwep19= new card("stage 1","Pansear","Simisear",90, "none",[0,0,0,0,0,0,0,0,0,0,2],"Water's Power",30, [0,1,0,0,0,0,0,0,0,0,2],"Flamethrower", 70, "blue","none",1, "red");
+}
+
+
+
+				{//Pokemon Jungle
+
+				var jung40= new card("stage 1","Nidoran♀", "Nidorina",70, "none", [1,0,0,0,0,0,0,0,0,0,0],"Supersonic","none", [1,0,0,0,0,0,0,0,0,0,2],"Double Kick",30, "purple","none",1, "green");
+}
+
+				{//Base Set
+
+
+				var base32= new card("stage 1","Abra", "Kadabra",60, "none", [0,0,0,0,2,0,0,0,0,0,0],"Recover","none", [0,0,0,0,2,0,0,0,0,0,1],"Super Psy",50, "purple","none",3, "purple");}
+
+				var Nido = new cardInst(jung40,190,[1,1,1,1,0,0,0,0,0,1,0],3,3);
+
+				oppHand.push(smdm1);
+				hand.push(smdm2);
+				hand.push(base32);
+				console.log(hand.length);
+				prize.push(jung40);
+				prize.push(smdm6);
+				prize.push(bwep19);
+				prize.push(jung40);
+				prize.push(smdm6);
+				prize.push(bwep19);
+				oppPrize.push(jung40);
+				oppPrize.push(smdm6);
+				oppPrize.push(bwep19);
+				oppPrize.push(jung40);
+				oppPrize.push(smdm6);
+				oppPrize.push(bwep19);
+				draw = function() {
+					background(224, 224, 127);
+					xyss107.vis(150,0);
+
+					base32.vis(0,20);
+
+					smdm6.vis(0,220);
+
+					jung40.vis(0,420);
+					bwep19.vis(300,0);
+					jung40.vis(450,0);
+					smdm6.vis(600,0);
+					base32.vis(750,0);
+					xyss107.vis(900,0);
+					bwep19.vis(1050,0);
+					Nido.vis(300,200);
+
+					drawBack(400,100);
+					//hands
+					for(var h=0; h<oppHand.length; h++){
+						drawBack(200+h*100,-170);
+					}
+					for(var h=0; h<hand.length; h++){
+						hand[h].vis(200+h*100,630);
+					}
+					for(var h=0; h<prize.length; h++){
+						drawBack(35,70+h*60);
+					}
+					for(var h=0; h<oppPrize.length; h++){
+						drawBack(1050,70+h*60);
+					}
+				};
+			}
+		};
+		// Get the canvas that Processing-js will use
+		var canvas = document.getElementById("mycanvas");
+		// Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
+
+		var processingInstance = new Processing(canvas, sketchProc);
+	</script>
+
+
+</html>
